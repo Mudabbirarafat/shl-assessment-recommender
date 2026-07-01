@@ -2,8 +2,9 @@ import re
 from typing import List, Dict, Any, Tuple
 
 from .catalog import get_catalog, TEST_TYPE_LABELS
-from .hybrid_search import hybrid_search
+from .catalog import get_catalog
 from .schemas import Message, Recommendation, ChatResponse
+from app import catalog
 
 # ---------------------------------------------------------------------------
 # Keyword banks
@@ -306,9 +307,13 @@ def handle_chat(messages: List[Message]) -> ChatResponse:
     requested_count = _extract_count(full_user_text)
     top_k = requested_count or 8
 
-    results = hybrid_search(
-    query,
-    top_k=max(top_k, 8),
+    catalog = get_catalog()
+
+    results = catalog.search(
+        query=query,
+        top_k=max(top_k, 8),
+        boost_types=boosts,
+        max_duration=max_duration,
     )
 
     if not results:

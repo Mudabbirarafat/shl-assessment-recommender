@@ -5,8 +5,8 @@ import re
 from collections import Counter
 import token
 from typing import List, Dict, Any, Optional
-from .semantic_search import build as build_semantic
-from .semantic_search import search as semantic_search
+# Build semantic index
+
 
 # from litellm import query
 # from litellm import query
@@ -131,8 +131,7 @@ class Catalog:
         norms[norms == 0] = 1.0
         self.doc_matrix_normed = self.doc_matrix / norms
         # Build semantic index
-        texts = [self._doc_text(item) for item in self.items]
-        build_semantic(self.items, texts)
+
 
     def _vectorize_query(self, text: str) -> np.ndarray:
         tokens = _tokenize(text)
