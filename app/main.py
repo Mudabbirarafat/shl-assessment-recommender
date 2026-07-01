@@ -13,7 +13,14 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
+@app.get("/")
+def root():
+    return {
+        "service": "SHL Assessment Recommender API",
+        "status": "running",
+        "docs": "/docs",
+        "health": "/health"
+    }
 
 @app.on_event("startup")
 def _warm_up():
