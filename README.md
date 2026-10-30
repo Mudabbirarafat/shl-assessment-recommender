@@ -1,5 +1,7 @@
 # SHL Conversational Assessment Recommender
 
+[![CI](https://github.com/Mudabbirarafat/shl-assessment-recommender/actions/workflows/ci.yml/badge.svg)](https://github.com/Mudabbirarafat/shl-assessment-recommender/actions/workflows/ci.yml)
+
 A conversational AI-powered assessment recommendation system that helps recruiters identify the most relevant SHL assessments through natural language conversations.
 
 The system accepts hiring requirements, asks clarifying questions when needed, recommends appropriate SHL assessments, refines recommendations as user requirements change, and compares assessments using only grounded evidence from the official SHL catalog.
