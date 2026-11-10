@@ -16,19 +16,15 @@ jobs:
           python-version: '3.12'
           cache: pip
 
-      # Non-blocking on purpose: several of these projects pin heavy ML wheels
-      # that fail on a clean runner. A red badge for an unrelated dependency
-      # issue is worse than no badge, so this warns instead of failing.
+      # Blocking. The hedge that used to be here - install, and warn instead
+      # of failing - was copied from a project that pins heavy ML wheels.
+      # This one needs fastapi, uvicorn, pydantic, numpy and requests, and if
+      # those will not install then nothing below this line means anything.
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          if [ -f requirements.txt ]; then
-            pip install -r requirements.txt || echo "::warning::dependency install failed"
-          else
-            echo "::notice::no requirements.txt"
-          fi
+          pip install -r requirements.txt pytest
 
-      # This is the real gate: every source file must parse.
       - name: Byte-compile all sources
         run: python -m compileall -q .
 
@@ -37,11 +33,11 @@ jobs:
           pip install ruff
           ruff check --output-format=github . || echo "::warning::ruff reported issues"
 
+      # This step used to be guarded by
+      #   if ls test_*.py tests/ **/test_*.py >/dev/null 2>&1
+      # and `ls` exits non-zero when ANY of its arguments is missing. There is
+      # no test_*.py at the repo root, so the guard was always false, the step
+      # always printed "no tests found", and the badge stayed green over a
+      # suite that had a failing test in it. There are tests. Run them.
       - name: Tests
-        run: |
-          pip install pytest
-          if ls test_*.py tests/ **/test_*.py >/dev/null 2>&1; then
-            pytest -q
-          else
-            echo "::notice::no tests found"
-          fi
+        run: pytest -q

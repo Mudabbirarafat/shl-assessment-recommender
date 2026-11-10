@@ -41,6 +41,25 @@ _STOPWORDS = {
 }
 
 
+# Every target here has to be a name that is actually in the catalog.
+# These were written against an older shape of the data, where the
+# short form was parenthesised - "Global Skills Assessment (GSA)" -
+# and the lookup below compares exactly, so once the catalog dropped
+# the brackets five of the seven aliases resolved to nothing and did
+# so silently. "gsa" in particular is why comparing OPQ with GSA
+# answered "I need both names" about a sentence containing both.
+# `test_every_alias_resolves` exists to stop that happening again.
+# "sjt" and "wpi" are gone because the assessments they named are not
+# in this catalog at all.
+NAME_ALIASES = {
+    "opq": "Occupational Personality Questionnaire OPQ32r",
+    "opq32r": "Occupational Personality Questionnaire OPQ32r",
+    "gsa": "Global Skills Assessment",
+    "mq": "Motivation Questionnaire MQM5",
+    "rwq": "RemoteWorkQ",
+}
+
+
 def _tokenize(text: str) -> List[str]:
     text = text.lower().replace("c++", "cplusplus").replace("c#", "csharp")
     tokens = _TOKEN_RE.findall(text)
@@ -234,15 +253,7 @@ class Catalog:
         for item in self.items:
             if name_fragment in item["name"].lower() or item["name"].lower() in name_fragment:
                 return item
-        aliases = {
-            "opq": "Occupational Personality Questionnaire (OPQ32r)",
-            "opq32r": "Occupational Personality Questionnaire (OPQ32r)",
-            "gsa": "Global Skills Assessment (GSA)",
-            "mq": "Motivation Questionnaire (MQ)",
-            "sjt": "Situational Judgement Test (SJT) - General",
-            "wpi": "Workplace Personality Inventory (WPI)",
-            "rwq": "Remote Work Questionnaire (RWQ)",
-        }
+        aliases = NAME_ALIASES
         key = re.sub(r"[^a-z0-9]", "", name_fragment)
         if key in aliases:
             target = aliases[key]
