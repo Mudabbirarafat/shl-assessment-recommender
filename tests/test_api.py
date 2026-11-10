@@ -5,7 +5,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from app.schemas import Message
 from app.dialogue import handle_chat
-from app.catalog import get_catalog
+from app.catalog import get_catalog, NAME_ALIASES
 
 
 def _ask(history):
@@ -105,3 +105,32 @@ if __name__ == "__main__":
             failed += 1
             print(f"FAIL {t.__name__}: {e}")
     print(f"\n{len(tests) - failed}/{len(tests)} passed")
+
+
+def test_every_alias_resolves():
+    """The alias table may not point at names the catalog does not have.
+
+    It used to. The targets carried a parenthesised short form - "Global
+    Skills Assessment (GSA)" - that the catalog data dropped at some point,
+    and because the lookup compares exactly, five of the seven aliases
+    resolved to nothing without saying so. That is what made comparing OPQ
+    with GSA answer "I need both names" about a sentence containing both.
+    """
+    catalog = get_catalog()
+    dead = {alias: target for alias, target in NAME_ALIASES.items() if catalog.find_by_name(alias) is None}
+    assert not dead, f"aliases resolving to nothing: {dead}"
+
+
+def test_alias_targets_exist_verbatim():
+    """And the target has to be the real name, not something close to it."""
+    names = {item["name"] for item in get_catalog().items}
+    missing = {a: t for a, t in NAME_ALIASES.items() if t not in names}
+    assert not missing, f"alias targets not in the catalog: {missing}"
+
+
+def test_comparison_names_both_assessments():
+    """The regression the two tests above are there to prevent."""
+    resp = _ask([("user", "What is the difference between OPQ and GSA?")])
+    assert resp.recommendations == []
+    assert "OPQ" in resp.reply or "Occupational Personality" in resp.reply
+    assert "GSA" in resp.reply or "Global Skills" in resp.reply
